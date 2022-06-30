@@ -1,0 +1,22 @@
+{
+   "instrumentos":{
+      "box 1":"Viol\u00e3o",
+      "box 2":"Piano",
+      "box 3":"Bateria",
+      "box 4":"Trompete",
+      "box 5":"Piano"
+   },
+   "cores":{
+      "Vermelho":"do",
+      "Azul":"re",
+      "Roxo":"mi",
+      "Verde":"fa",
+      "Amarelo":"sol",
+      "Rosa":"la",
+      "Preto":"si"
+   },
+   "Velocidades":{
+      "Velocidade maxima":9,
+      "Velocidade minima":7
+   }
+}
