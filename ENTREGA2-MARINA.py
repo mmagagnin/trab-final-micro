@@ -26,6 +26,24 @@ def matrizLuzes(mInv):
         i+=1
     return mLuzes
 
+def criaString(m):
+    s="posicao:"
+    for lista in m:
+        for bolinha in lista:
+            if bolinha==None:
+                s+="W"
+            elif bolinha=="azul":
+                s+="B"
+            elif bolinha=="preto":
+                s+="X"
+            elif bolinha=="vermelho":
+                s+="R"
+            elif bolinha=="verde":
+                s+="G"
+            elif bolinha=="laranja":
+                s+="O"
+    return s
+
 while True:
     _, imagem = stream.read()
    
