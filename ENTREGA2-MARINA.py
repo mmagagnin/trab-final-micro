@@ -1,4 +1,6 @@
 from cv2 import *
+from serial import Serial
+from threading import Thread, Timer
 
 stream=VideoCapture(0)
 
