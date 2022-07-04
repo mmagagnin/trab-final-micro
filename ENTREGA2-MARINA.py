@@ -53,8 +53,6 @@ while True:
     colunas = 8
     tamanho = 60
    
-   
-   
     #tabuleiro matriz
     matriz=[[None,None,None,None,None,None,None,None],
             [None,None,None,None,None,None,None,None],
@@ -76,7 +74,7 @@ while True:
         contornos,_ = findContours(mascara,RETR_TREE,CHAIN_APPROX_SIMPLE)
        
        
-    #detecta quando uma bolinha vermelha entra no campo da camera
+    #detecta quando uma bolinha entra no campo da camera
         for contorno in contornos:
             x,y,comprimento,altura = boundingRect(contorno)
             if comprimento*altura>=3000:
@@ -87,7 +85,7 @@ while True:
                     #putText(imagem,("VERMELHO: Linha: "+str(coordy+1)+", Coluna: "+str(coordx+1)),(20,30),color=(0,0,255),fontFace=FONT_HERSHEY_SIMPLEX,fontScale=1,thickness=4)
                     print(cor+" - Linha: "+str(coordy+1)+", Coluna: "+str(coordx+1))
                     matriz[coordy][coordx]=cor
-                    print(matriz)
+                    #print(matriz)
 
        
     #desenhando tabuleiro

@@ -1,0 +1,21 @@
+matriz=[[None,None,None,None,None,None,None,None],
+            [None,None,None,None,None,None,None,None],
+            [None,None,None,None,None,None,None,None],
+            [None,None,None,None,None,None,None,None],
+            [None,None,None,None,None,None,None,None],
+            ]
+
+def matrizInv(m):
+    mInv=[]
+    i=0
+    j=0
+    while j<8:
+        mInv.append([])
+        while i<5:
+            mInv.append(m[j][i])
+            i+=1
+        j+=1
+    return mInv
+
+
+print(matrizInv(matriz))
