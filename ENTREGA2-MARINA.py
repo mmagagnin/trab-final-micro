@@ -2,6 +2,30 @@ from cv2 import *
 
 stream=VideoCapture(0)
 
+def matrizInv(m):
+    mInv=[]
+    i=0
+    j=0
+    while j<8:
+        mInv.append([])
+        while i<5:
+            mInv[j].append(m[i][j])
+            i+=1
+        i=0
+        j+=1
+    return mInv
+
+def matrizLuzes(mInv):
+    mLuzes=[]
+    i=0
+    while i<len(mInv):
+        if i%2==0:
+            mLuzes.append(mInv[i])
+        else:
+            mLuzes.append(mInv[i][::-1])
+        i+=1
+    return mLuzes
+
 while True:
     _, imagem = stream.read()
    
