@@ -1,8 +1,8 @@
-from re import X
-from serial import Serial
-from threading import Thread, Timer
 
-meu_serial = Serial("/dev/serial0", baudrate=9600)
+#from serial import Serial
+#from threading import Thread, Timer
+
+#meu_serial = Serial("/dev/serial0", baudrate=9600)
 
 matriz=[[11,12,13,14,15,16,17,18],
         [21,22,23,24,25,26,27,28],
@@ -65,5 +65,5 @@ mLuzes=matrizLuzes(mInv)
 envio=criaString(mLuzes)
 
 print(envio)
-meu_serial.write(envio.encode("UTF-8"))
+#meu_serial.write(envio.encode("UTF-8"))
 

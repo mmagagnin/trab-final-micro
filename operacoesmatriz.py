@@ -5,7 +5,7 @@ def vInicialDic(matriz):
     for linha in matriz:
         lDic.append([])
         for posicao in linha:
-            lDic[i].append({"corAntiga":None,"corAtual":None,"contagem":0})
+            lDic[i].append({"corAntiga":None,"corAtual":None,"contagem":1})
         i+=1
     return lDic
 
@@ -16,7 +16,7 @@ def atualizaContagemDic(d):
             return True
     else:
         d["corAntiga"]=d["corAtual"]
-        d["contagem"]=0
+        d["contagem"]=1
 
 def atualizaLdeDic(matrizNova,lD):
     linha=0
