@@ -1,0 +1,133 @@
+ for (int i = 0; i < len; i++)
+  {
+    EEPROM.write(addrOffset + 1 + i, strToWrite[i]);
+  }
+}
+String readStringFromEEPROM(int addrOffset)
+{
+  int newStrLen = EEPROM.read(addrOffset);
+  char data[newStrLen + 1];
+  for (int i = 0; i < newStrLen; i++)
+  {
+    data[i] = EEPROM.read(addrOffset + 1 + i);
+  }
+  data[newStrLen] = '\ 0'; // !!! NOTE !!! Remove the space between the slash "/" and "0" (I've added a space because otherwise there is a display bug)
+  return String(data);
+}
+
+
+void setup() {
+
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.setBrightness(80);
+  Serial.begin(9600);
+  Serial.setTimeout(10);
+  
+  String retrievedString = readStringFromEEPROM(0);
+  Serial.print("The String we read from EEPROM: ");
+  Serial.println(retrievedString);
+
+  pinMode(potenciometro, INPUT);
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    posicao[i] = W;
+  }
+  FastLED.show();
+}
+
+void loop() {
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = posicao[i];
+  }
+
+  if (Serial.available() > 0) {
+    String texto = Serial.readStringUntil('\n');
+    texto.trim();
+   
+    writeStringToEEPROM(0, texto);
+    /*
+      if (texto.substring(0, 6) == "minima:") {
+      minima = texto.substring(7);
+      Serial.println("Minima recebido: " + minima);
+      }
+      if (texto.substring(0, 6) == "maxima:") {
+      maxima = texto.substring(7);
+      Serial.println("Maxima recebido: " + maxima);
+      }
+    */
+    
+    if (texto.substring(0, 8) == "posicao:") {
+      memset(posicao, W, sizeof(posicao));
+      String posicao_text = texto.substring(8);
+      
+      Serial.println("posicao:" + posicao_text);
+      int posicao_len = posicao_text.length();
+
+      int index_leds = 0;
+      for (int i = 0; i < posicao_len; i++) {
+
+        char letra = texto.charAt(8 + i);
+        Serial.println(letra);
+
+        if (letra == 'X') {
+          posicao[index_leds] = X;
+        }
+        else if (letra == 'W') {
+          posicao[index_leds] = W;
+        }
+        else if (letra == 'Y') {
+          posicao[index_leds] = Y;
+        }
+        else if (letra == 'G') {
+          posicao[index_leds] = G;
+        }
+        else if (letra == 'R') {
+          posicao[index_leds] = R;
+        }
+        else if (letra == 'B') {
+          posicao[index_leds] = B;
+        }
+        else if (letra == 'O') {
+          posicao[index_leds] = O;
+        }
+        index_leds = index_leds + gap+1;
+        if ((i + 1) % size_column == 0) {
+          index_leds = index_leds + curve;
+        }
+      }
+    }
+  }
+
+  unsigned long instanteAtual = millis();
+
+  if (instanteAtual > instanteDaContagem2 + velocidade) {
+    FastLED.clear();
+    if (index_row > NUM_LEDS) {
+      index_row = 0;
+    }
+    else {
+
+      for (int i = 0; i < size_column; i++) {
+        if (i + index_row < NUM_LEDS) {
+          leds[i + index_row] = posicao[i + index_row];
+        }
+        index_row = index_row + gap;
+        if ((i + 1) % size_column == 0) {
+          index_row = index_row + curve;
+        }
+      }
+      index_row = index_row + size_column;
+      FastLED.show();
+    }
+    instanteDaContagem2 = instanteAtual;
+  }
+
+  if (instanteAtual > instanteDaContagem1 + 50) {
+    int valorLido = analogRead(potenciometro);
+    int valorFinal = map(valorLido, 0, 1023, minima, maxima);
+    velocidade = valorFinal;
+    //Serial.println(velocidade);
+    instanteDaContagem1 = instanteAtual;
+  }
+}
