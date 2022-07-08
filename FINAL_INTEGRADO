@@ -6,9 +6,62 @@ from pygame import mixer
 from threading import Timer
 import time
 import threading
-
+from serial import Serial
+from threading import Thread, Timer
+from time import sleep
 import cv2
-from threading import Timer
+
+def matrizInv(m):
+    mInv=[]
+    i=0
+    j=0
+    while j<8:
+        mInv.append([])
+        while i<5:
+            mInv[j].append(m[i][j])
+            i+=1
+        i=0
+        j+=1
+    return mInv
+
+def matrizLuzes(mInv):
+    mLuzes=[]
+    i=0
+    while i<len(mInv):
+        if i%2==0:
+            mLuzes.append(mInv[i])
+        else:
+            mLuzes.append(mInv[i][::-1])
+        i+=1
+    return mLuzes
+ 
+def criaString(m):
+    s="posicao:"
+    for lista in m:
+        for bolinha in lista:
+            if bolinha==None:
+                s+="W"
+            elif bolinha=="azul":
+                s+="B"
+            elif bolinha=="preto":
+                s+="X"
+            elif bolinha=="vermelho":
+                s+="R"
+            elif bolinha=="verde":
+                s+="G"
+            elif bolinha=="laranja":
+                s+="O"
+    return s+"\n"
+
+def envio(m):
+    mInv=matrizInv(m)
+    mLuzes=matrizLuzes(mInv)
+    envio=criaString(mLuzes)
+    sleep(2)
+    meu_serial = Serial("COM23", baudrate=9600)
+    meu_serial.write(envio.encode("UTF-8"))
+    return True
+
 
 def roda_camera():
     stream=cv2.VideoCapture(0)
@@ -20,6 +73,7 @@ def roda_camera():
     matriz=[]
     global timer
     timer = None
+    meu_serial = Serial("COM23", baudrate=9600, timeout=0.01)
 
     # def matrizInv(m):
     #     mInv=[]
@@ -34,40 +88,6 @@ def roda_camera():
     #         j+=1
     #     return mInv
     # 
-    # def matrizLuzes(mInv):
-    #     mLuzes=[]
-    #     i=0
-    #     while i<len(mInv):
-    #         if i%2==0:
-    #             mLuzes.append(mInv[i])
-    #         else:
-    #             mLuzes.append(mInv[i][::-1])
-    #         i+=1
-    #     return mLuzes
-    #  
-    # def criaString(m):
-    #     s="posicao:"
-    #     for lista in m:
-    #         for bolinha in lista:
-    #             if bolinha==None:
-    #                 s+="W"
-    #             elif bolinha=="azul":
-    #                 s+="B"
-    #             elif bolinha=="preto":
-    #                 s+="X"
-    #             elif bolinha=="vermelho":
-    #                 s+="R"
-    #             elif bolinha=="verde":
-    #                 s+="G"
-    #             elif bolinha=="laranja":
-    #                 s+="O"
-    #     return s
-    # 
-    # def enviaLeds(m):
-    #     mInv=matrizInv(m)
-    #     mL=matrizLuzes(mInv)
-    #     s=criaString(mL)
-    #     return s
 
     def envia_matriz():
         print(matriz)
@@ -110,13 +130,13 @@ def roda_camera():
 
     while True:
         _, imagem = stream.read()
-       
+
         linhas = 5
         colunas = 8
         tamanho = 70
-       
-        
-        
+
+
+
         #tabuleiro matriz
         matriz=[[None,None,None,None,None,None,None,None],
                 [None,None,None,None,None,None,None,None],
@@ -124,12 +144,12 @@ def roda_camera():
                 [None,None,None,None,None,None,None,None],
                 [None,None,None,None,None,None,None,None],
                 ]
-        
+
         lDic=vInicialDic(matriz)
 
     #        
         imagemHSV = cv2.cvtColor(imagem,cv2.COLOR_BGR2HSV)
-        
+
         dCores={
                 "Amarelo":{"escuro":(10, 100, 10),"claro":(25, 255, 255)},
                 "Verde":{"escuro":(50,200,10),"claro":(90,255,120)},
@@ -138,7 +158,7 @@ def roda_camera():
                 "Preto":{"escuro":(110,215,10),"claro":(125,255,215)},
                 "Rosa":{"escuro":(145,80,2),"claro":(190,200,255)},
                 "Roxo":{"escuro":(115,35,40),"claro":(130,235,250)}
-                
+
                 }
         #,"azul":{"escuro":(130,250,20),"claro":(115,200,255)}}
     #
@@ -148,8 +168,8 @@ def roda_camera():
             imagem2 = cv2.bitwise_and(imagem, imagem, mask=mascara)
             cv2.imshow("Janela1",imagem2)
             contornos,_ = cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-            
-            
+
+
         #detecta quando uma bolinha vermelha entra no campo da camera
             for contorno in contornos:
                 x,y,comprimento,altura = cv2.boundingRect(contorno)
@@ -161,18 +181,19 @@ def roda_camera():
                         #putText(imagem,("VERMELHO: Linha: "+str(coordy+1)+", Coluna: "+str(coordx+1)),(20,30),color=(0,0,255),fontFace=FONT_HERSHEY_SIMPLEX,fontScale=1,thickness=4)
                         #print(cor+" - Linha: "+str(coordy+1)+", Coluna: "+str(coordx+1))
                         matriz[coordy][coordx]=cor
-                        
+                        envio(matriz)
+
     #                     if atualizaLdeDic(matriz,lDic):
     #                         print("LALALALA")
     #                         print(matriz)
-                        
 
-            
+
+
         #desenhando tabuleiro
         i=0
         x1=50
         y1=50
-        
+
         while i<colunas:
             cv2.rectangle(imagem,pt1=(x1,y1),pt2=(x1+tamanho,(linhas+1)*tamanho),color=(90,90,90),thickness=3)
             x1+=tamanho
@@ -187,15 +208,15 @@ def roda_camera():
             j+=1
 
         cv2.imshow("Minha Janela",imagem)
-        
-        
+
+
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-        
-       
+
+
     stream.release()
     destroyAllWindows()
-    
+
 #threading
 def thread_delay(thread_name, delay):
     count = 0
@@ -203,8 +224,8 @@ def thread_delay(thread_name, delay):
         time.sleep(delay)
         count += 1
         print(thread_name, '-------->', time.time())
-        
-        
+
+
 #t1 = threading.Thread(target=roda_camera, args=('t1', 1))
 t1 = threading.Thread(target=roda_camera, args=())
 
@@ -408,7 +429,7 @@ campo_nota6.place(x=350, y=305)
 
 preto = tk.Label(janela, bg = "black", text="   ")
 preto.place(x= 300, y= 355)
- 
+
 nota7 = tk.StringVar(value= data["cores"]["Preto"])  
 campo_nota7 = tk.OptionMenu(janela, nota7, "(selecione)", "do", "re", "mi", "fa", "sol", "la", "si")
 campo_nota7.config(width=10)
@@ -457,9 +478,9 @@ def salvar_dados():
     print("Nota p/ amarelo:", nota5.get())
     print("Nota p/ rosa:", nota6.get())
     print("Nota p/ preto:", nota7.get())
-  
+
     json_dados={
-      
+
           "instrumentos": {
               "box 1": instrumento1.get(), "box 2" : instrumento2.get(), "box 3": instrumento3.get(), "box 4": instrumento4.get(), "box 5": instrumento5.get(),
           },
@@ -472,7 +493,7 @@ def salvar_dados():
               "Velocidade": vel#.get()
           }
     }
-  
+
     with open("Dadosescolhidos.json", "w") as arquivo:
         json.dump(json_dados, arquivo) 
 
@@ -499,25 +520,25 @@ envio_sons_finais = []
 def escolhas_definidas():
     global envio_sons_finais
     envio_sons_finais=[]
-    
+
     for i in range(0,len(matriz)):
         cores_na_linha = matriz[i]
         lista_de_notas = []
-    
+
         for cor in cores_na_linha:
             if cor != None:
                 lista_de_notas.append(notas[cor].get())
             else:
                 lista_de_notas.append(None)
-    
-        
+
+
         dicionario = {
             "instrumento": instrumentos[i].get(),
             "notas": lista_de_notas
         }
-        
+
         envio_sons_finais.append(dicionario)
-    
+
     print(envio_sons_finais)
     return 
 
@@ -534,18 +555,18 @@ s_biblioteca={"Trompete":trompete,"Bateria":drums,"Baixo":baixo,"Violão":viola,
 def play():
     global envio_sons_finais
     global cont
-    
+
     if cont >= 8:
         cont=0
-    
+
     for i in range(len(envio_sons_finais)):
         dicionario=envio_sons_finais[i]
-        
+
         if dicionario["instrumento"] != "(selecione)":
-            
+
             s_som=s_biblioteca[dicionario["instrumento"]]
             if dicionario["notas"][cont]:
-                
+
                 recurso_de_nota=s_som[dicionario["notas"][cont]]
 
                 if isinstance(recurso_de_nota,pygame.mixer.Sound) == True:
@@ -556,12 +577,12 @@ def play():
                     toca_inst=pygame.mixer.Sound(buffer=nota)
                     toca_inst.play()
     cont+=1
-    
+
     global timer 
     timer= Timer(vel, play)
     timer.start()
-    
-   
+
+
 
 # Carolina converteu a matriz de cores para uma estrura como essa abaixo
 
@@ -629,8 +650,8 @@ for i in range(len(matriz)):
             cor = "black"
         elif matriz[i][j] == None:
             cor = "white"
-    
-        
+
+
         myCanvas.create_oval(x,y,x+10,y+10, fill = cor)  
 
 '''
