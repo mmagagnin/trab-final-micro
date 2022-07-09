@@ -1,4 +1,44 @@
- for (int i = 0; i < len; i++)
+#include "FastLED.h"
+#include <EEPROM.h>
+
+#define size_column 5
+#define size_row 8
+#define gap 3
+#define curve 3
+#define NUM_LEDS size_column*size_row + (size_column-1)*gap*size_row + (size_row-1)*(gap+curve)
+
+#define DATA_PIN 6
+
+#define X  0x000000 //Black (OFF)
+#define W  0xFFFFFF //White
+#define Y  0xFFFF00 //Yellow
+#define G  0x008000 //Green
+#define R  0xFF0000 //Red
+#define B  0x0000FF //Blue
+#define V  0xFF00FF //Pink
+#define O  0x9400D3 //Purpol
+
+CRGB leds[NUM_LEDS];
+
+int potenciometro = A5;
+int velocidade = 100;
+int x = 0;
+int minima = 0;
+int maxima = 1500;
+int index_row = 0;
+
+
+unsigned long instanteDaContagem1 = 0;
+unsigned long instanteDaContagem2 = 0;
+
+unsigned long posicao[NUM_LEDS] = {};
+
+
+void writeStringToEEPROM(int addrOffset, const String &strToWrite)
+{
+  byte len = strToWrite.length();
+  EEPROM.write(addrOffset, len);
+  for (int i = 0; i < len; i++)
   {
     EEPROM.write(addrOffset + 1 + i, strToWrite[i]);
   }
