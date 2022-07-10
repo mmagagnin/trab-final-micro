@@ -24,7 +24,8 @@ def atualizaLdeDic(matrizNova,lD):
         coluna=0
         for bolinha in row:
             lD[linha][coluna]["corAtual"]=matrizNova[linha][coluna]
-            atualizaContagemDic(lD[linha][coluna])
+            if atualizaContagemDic(lD[linha][coluna]):
+                #determinadas outras operacoes
             coluna+=1
         linha+=1
 
